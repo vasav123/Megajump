@@ -1,0 +1,385 @@
+import java.io.*;
+import java.awt.*;
+import java.awt.geom.*;
+import java.awt.event.*;
+import java.util.*;
+import javax.swing.*;
+
+public class GamePanel extends JPanel implements MouseListener,MouseMotionListener,KeyListener{
+	private boolean [] keys;
+	private boolean click;
+	
+	private Image gameBckgrnd;
+	private Image decoImage=null;
+	
+	private Player player1;
+	
+	private boolean newImage=false;
+	
+	private boolean ground;	//keeps track of if the guy is on the ground
+	
+	private int mx,my;
+	private int backx,backy,midx,midy,frontx,fronty;
+	
+	private int coinX,enemyX,boxX,starX,patternX,jumperX,spikeX;
+	
+	private ArrayList<Rectangle>rectList = new ArrayList<Rectangle>();
+	
+	private ArrayList<Decorations>decoList = new ArrayList<Decorations>();
+	private ArrayList<Enemy>enemyList = new ArrayList<Enemy>();
+	private ArrayList<Coin>coinList = new ArrayList<Coin>();
+	private ArrayList<Box> boxList = new ArrayList<Box>();
+	private ArrayList<Star> starList = new ArrayList<Star>();
+	private ArrayList <Spikes> spikeList = new ArrayList<Spikes>();
+	
+	private ArrayList<Enemy>eRemove = new ArrayList<Enemy>(); 
+	private ArrayList<Coin>cRemove = new ArrayList<Coin>();
+	private ArrayList<Box> bRemove = new ArrayList<Box>();
+	private ArrayList<Star> sRemove = new ArrayList<Star>();
+	private ArrayList <Spikes> spRemove = new ArrayList <Spikes> (); 
+	
+	private ArrayList <Jumper> jumperList = new ArrayList<Jumper>();
+	
+    public GamePanel(){
+		setFocusable(true);
+    	grabFocus();
+    	addMouseListener(this);
+		addMouseMotionListener(this);
+		addKeyListener(this);
+		keys= new boolean [10000]; 
+		
+		gameBckgrnd = new ImageIcon ("Backgroundimage.png").getImage();
+		click=false;
+		
+		player1= new Player(200,300,100,"Characters\Redfridge\android");
+		ground = true;
+		player1.setVelo(150);
+		coinX = 0;
+		enemyX = 100;
+		patternX = 100;
+		starX=100;
+		boxX=100;
+		jumperX=100;
+		spikeX=100;
+    }
+//--------------------------------------------------------------------------------------Mandatory Methods
+//---------------------------------------------------------------------------------Mouse Methods
+	public void mouseEntered(MouseEvent e){}
+    public void mouseReleased(MouseEvent e){click = false;}
+    public void mousePressed(MouseEvent e){click = true;}
+    //------------------------------------------------------------------------------------Keyboard methods
+   	public void keyPressed(KeyEvent evt){keys[evt.getKeyCode()]=true;}
+	public void keyReleased(KeyEvent evt){keys[evt.getKeyCode()]=false; player1.resetCounter();player1.resetPicCounter();}
+	public void keyTyped(KeyEvent evt){}
+	//---------------------------------------------------------------------------------Mouse Methods
+    public void mouseExited(MouseEvent e){}
+    public void mouseClicked(MouseEvent e){}
+    public void mouseDragged(MouseEvent e){mx = e.getX();my = e.getY();}
+    public void mouseMoved(MouseEvent e){mx = e.getX();my = e.getY();}
+//----------------------------------------------------------------------------------------------------------------
+	public void moveEveryThing(Graphics g){
+		if(ground == true){//when on the ground, a number of coins  spawn immedietly
+			startCoins();
+			ground = false;//this way no coins spawn after the first few coins have spawned
+		}
+		newPattern(patternX);
+		newDecos();
+		newEnemy(enemyX);
+		newCoin(coinX);
+		newBoxes(boxX);//change this to boxX after
+		newStar(starX);
+		newJumpers(jumperX);
+		newSpikes(spikeX);
+		moveLayerOne(g);
+		moveLayerTwo(g);
+		moveLayerThree(g);
+		moveEnemies();
+		checkAllCollisions();
+		if (player1.getDown()){
+			player1.setAccel(-1);
+		}
+		player1.changeVelocity();
+	}
+//------------------------------------------------------------------------------------------------------------------------------------
+	public void addToRemove(){
+	}
+//------------------------------------------------------------------------------------------------------------------------------------
+//all collision stuff
+	public void checkAllCollisions(){
+		checkEnemyCollision();
+		checkCoinCollision();
+		checkBoxCollision();
+		checkSpikeCollision();
+		checkStarCollision();
+		checkJumperCollision();
+	}
+	public void checkEnemyCollision(){
+		for (Enemy e: enemyList){
+			if (e.getOnScreen()){	//can be removed later on
+				if (e.checkCollision(e.getPics().get(e.getCounter()),player1)){
+					if ((player1.getY()-(int)(player1.getVelocity()))+player1.getHeight()<e.getY()){
+						player1.setVelo(50);
+					}
+					eRemove.add(e);
+					player1.setVelo(50);
+					player1.setDown(false);
+				}	
+			}
+		}
+		for (Enemy e: eRemove){
+			enemyList.remove(e);
+		}
+		eRemove = new ArrayList<Enemy>();
+	}
+	public void checkStarCollision(){
+		for (Star s: starList){
+			if (s.getOnScreen()){	//can be removed later on
+				if (s.checkCollision(s.getPics().get(s.getCounter()),player1)){
+					sRemove.add(s);
+					player1.setVelo(s.getDist());
+				}	
+			}
+		}
+		for (Star s: sRemove){
+			starList.remove(s);
+		}
+		sRemove = new ArrayList<Star>();
+	}
+	public void checkCoinCollision(){
+		for (Coin c:coinList){
+			if (c.getOnScreen()){//can be removed later on
+				if (c.checkCollision(c.getPics().get(c.getCounter()),player1)){
+					cRemove.add(c);
+					player1.setVelo(50);
+					player1.setDown(false);		
+					if ((player1.getY()-(int)(player1.getVelocity()))+player1.getHeight()<c.getY()){
+						player1.setVelo(50);
+					}
+				}
+			}
+		}
+		for (Coin c:cRemove){
+			coinList.remove(c);
+		}
+		cRemove = new ArrayList<Coin>();
+	}
+	public void checkSpikeCollision(){
+		for (Spikes s:spikeList){
+			if (s.getOnScreen()){//can be removed later on
+				if (s.checkCollision(s.getImage(),player1)){	
+					player1.setSpikeVelo();
+					player1.setDown(true);	
+					spRemove.add(s);	
+				}
+			}
+		}
+		for (Spikes s:spRemove){
+			spikeList.remove(s);
+		}
+		spRemove = new ArrayList<Spikes>();
+	}
+	public void checkBoxCollision(){
+		for (Box b:boxList){
+			if (b.getOnScreen()){//can be removed later on
+				if (b.checkCollision(b.getImage(),player1)){	
+					player1.setVelo(50);
+					player1.setDown(false);	
+					b.setPcount(b.getPcount()-1);
+					if (b.getPcount()==0){
+						bRemove.add(b);	
+					}
+				}
+			}
+		}
+		for (Box b:bRemove){
+			boxList.remove(b);
+		}
+		bRemove = new ArrayList<Box>();
+	}
+	public void checkJumperCollision(){
+		for (Jumper j:jumperList){
+			if (j.getOnScreen()){//can be removed later on
+				if (j.checkCollision(j.getImage(),player1)){	
+					player1.setVelo(50);
+					player1.setDown(false);	
+				}
+			}
+		}
+	}
+//-------------------------------------------------------------------------------------------------------------------------------------------------------
+	public boolean checkSpawn(Rectangle object){
+		for(Rectangle i : rectList){
+			if(object.intersects(i)){
+				return false;
+			}
+		}
+		return true;
+	}
+//-------------------------------------------------------------------------------------------------------------------------------------------------------
+//Star
+	public void newStar(int multiplier){
+		//creates coin objects
+		int prob = (int)(Math.random()*multiplier);
+		if(prob == 1){
+			int xpos = (int)(Math.random()*450);
+			int type = (int)(Math.random()*4);
+			Star s = new Star(xpos,-100,type);
+			if(checkSpawn(new Rectangle(s.getX(),s.getY(),s.getWidth(),s.getHeight())) == true){
+				starList.add(s);
+				rectList.add(new Rectangle(s.getX(),s.getY(),s.getWidth(),s.getHeight()));
+			}
+		}
+	}
+	public void drawStar(Graphics g){
+		for(Star i : starList){
+			g.drawImage(i.getPics().get(i.getCounter()),i.getX(),i.getY(),i.getWidth(),i.getHeight(),null);
+			g.setColor(Color.RED);
+			g.drawRect(i.getX(),i.getY(),i.getWidth(),i.getHeight());
+			i.count();
+		}
+		
+	}
+//-------------------------------------------------------------------------------------------------------------------------------------------------------
+//Decorations
+	public void newDecos(){
+		int prob = (int)(Math.random()*100);
+		if(prob == 1){
+			if(decoList.size() < 1){
+				int prob2 = (int)(Math.random()*2);
+				if(prob2 == 1){
+					decoList.add(new Decorations(-700,(int) (backy*0.1)%23080,false));
+				}
+				else{
+					decoList.add(new Decorations(-700,(int)(backy*0.1)%23080,true));
+				}
+			}
+		}
+		Boolean check = true;
+		for(Decorations i : decoList){
+			if(i.getYTop()>=2000){
+				check = false;
+				break;
+			}
+		}
+		if(check ==false && decoList.size()>0){
+			decoList.remove(0);
+		}	
+	}
+//-------------------------------------------------------------------------------------------------------------------------------------------------------
+//Boxes
+	public void newBoxes(int multiplier){
+		int prob = (int)(Math.random()*multiplier);
+		if(prob == 1){
+			int xpos = (int)(Math.random()*400);
+			Box b = new Box(xpos,-400,backy);
+			if(checkSpawn(new Rectangle(b.getX(),b.getY(),b.getWidth(),b.getHeight())) == true){
+				boxList.add(b);
+				rectList.add(new Rectangle(b.getX(),b.getY(),b.getWidth(),b.getHeight()));
+			}
+		}
+	}
+	public void drawBox(Graphics g){
+		for(Box i : boxList){
+			g.drawImage(i.getImage(),i.getX(),i.getY(),i.getWidth(),i.getHeight(),null);
+			g.setColor(Color.RED);
+			g.drawRect(i.getX(),i.getY(),i.getWidth(),i.getHeight());
+		}
+	}
+//-------------------------------------------------------------------------------------------------------------------------------------------------------
+//Spikes
+	public void newSpikes(int multiplier){
+		int prob = (int)(Math.random()*multiplier);
+		if(prob == 1){
+			int xpos = (int)(Math.random()*400);
+			Spikes s = new Spikes(xpos,-400,backy);
+			if(checkSpawn(new Rectangle(s.getX(),s.getY(),s.getWidth(),s.getHeight())) == true){
+				spikeList.add(s);
+				rectList.add(new Rectangle(s.getX(),s.getY(),s.getWidth(),s.getHeight()));
+			}
+		}
+	}
+	public void drawSpike(Graphics g){
+		for(Spikes i : spikeList){
+			g.drawImage(i.getImage(),i.getX(),i.getY(),i.getWidth(),i.getHeight(),null);
+			g.setColor(Color.RED);
+			g.drawRect(i.getX(),i.getY(),i.getWidth(),i.getHeight());
+		}
+	}
+//-------------------------------------------------------------------------------------------------------------------------------------------------------
+//Jumper
+	public void newJumpers(int multiplier){
+		int prob = (int)(Math.random()*multiplier);
+		if(prob == 1){
+			int xpos = (int)(Math.random()*400);
+			Jumper j = new Jumper(xpos,-400,backy);
+			if(checkSpawn(new Rectangle(j.getX(),j.getY(),j.getWidth(),j.getHeight())) == true){
+				jumperList.add(j);
+				rectList.add(new Rectangle(j.getX(),j.getY(),j.getWidth(),j.getHeight()));
+			}
+		}
+	}
+	public void drawJumper(Graphics g){
+		for(Jumper i : jumperList){
+			g.drawImage(i.getImage(),i.getX(),i.getY(),i.getWidth(),i.getHeight(),null);
+			g.setColor(Color.RED);
+			g.drawRect(i.getX(),i.getY(),i.getWidth(),i.getHeight());
+		}
+	}
+//-------------------------------------------------------------------------------------------------------------------------------------------------------
+//Enemies
+	public void newEnemy(int multiplier){
+		int prob = (int)(Math.random()*multiplier);
+		if(prob == 1){
+			int xpos = (int)(Math.random()*400);
+			Enemy e = new Enemy(xpos,-400);
+			if(checkSpawn(new Rectangle(e.getX(),e.getY(),e.getWidth(),e.getHeight())) == true){
+				enemyList.add(new Enemy(xpos,-400));
+				rectList.add(new Rectangle(e.getX(),e.getY(),e.getWidth(),e.getHeight()));
+			}
+		}
+	}
+	public void moveEnemies(){
+		for(Enemy i : enemyList){
+			i.move();
+		}
+	}
+	public void drawEnemy(Graphics g){
+		Graphics2D g2d = ( Graphics2D ) g;
+		for(Enemy i : enemyList){
+			if (i.getFlip()){
+				g2d.drawImage(i.getPics().get(i.getCounter()),i.getX()+i.getWidth(),i.getY(),-i.getWidth(),i.getHeight(),null);
+			}
+			else{
+				g.drawImage(i.getPics().get(i.getCounter()),i.getX(),i.getY(),i.getWidth(),i.getHeight(),null);
+			}
+			g.setColor(Color.RED);
+			g.drawRect(i.getX(),i.getY(),i.getWidth(),i.getHeight());
+			i.count();
+			i.setDirection();
+			i.move();
+		}
+	}
+//-------------------------------------------------------------------------------------------------------------------------------------------------------
+//Coins
+	public void startCoins(){
+		//coins that spawn at the very beginning of the game
+		for(int i=0; i<20; i++){
+			int xpos = (int)(Math.random()*450);
+			int ypos = (int)(Math.random()*700);
+			Coin c = new Coin(xpos,ypos,3);
+			if(checkSpawn(new Rectangle(c.getX(),c.getY(),c.getWidth(),c.getHeight())) == true){
+				coinList.add(c);
+				rectList.add(new Rectangle(c.getX(),c.getY(),c.getWidth(),c.getHeight()));
+			}
+		}
+	}
+	public void newCoin(int multiplier){
+		//creates coin objects
+		int prob = (int)(Math.random()*multiplier);
+		if(prob == 1){
+			int xpos = (int)(Math.random()*450);
+			int type = (int)(Math.random()*6);
+			coinList.add(new Coin(xpos,-100,type));
+		}
+	}
+	public void drawCoin(Graphics g){

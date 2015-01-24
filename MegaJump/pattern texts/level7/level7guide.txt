@@ -1,0 +1,28 @@
+1-10 single coins
+11-20 single small coins
+21-23 single random special coin
+24 single random star
+25 single random power-up
+26 3x3 square coins
+27-28 single boxes
+29-30 single jumpers
+31 single red monster with 2 coins
+32 single blue coin
+33 single red coin
+34 single blue monster with 2 coins
+35 1x4 line coins
+36 3x3 circle of coins
+37-39 single boxes
+40-42 single jumpers
+43 3x3 circle of coins with 1 special coin
+44 3x3 circle of coins with 1 star
+45 single spike with 2 coins
+46 double spikes with 1 coin
+47 double red monsters with 1 coin
+48 row of coins
+49 double boxes
+50 double jumpers
+51 row of boxes
+56 4x4 square coins
+52 row of jumpers
+53-55 single random special coin

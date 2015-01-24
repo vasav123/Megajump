@@ -1,0 +1,6 @@
+1-10 single coins
+11-20 single small coins
+21-23 single random special coin
+24 single random star
+25 single random power-up
+26 3x3 square coins

@@ -1,0 +1,143 @@
+@charset "utf-8";
+/* CSS Document */
+
+html, body, ul, ol, li, p, h1, h2, h3, h4, h5, h6, form, fieldset, a {
+	border:0;
+	margin:0;
+	padding:0;
+}
+
+body {
+	980px;
+	background-color: #000;
+}
+
+p {
+	font-family:Verdana, Geneva, sans-serif;
+	font-size: 28pt;
+	color:#FFF;
+	line-height: 48px;
+}
+
+ol {
+	margin-left: 80px;
+	
+}
+
+li {
+	font-family:Verdana, Geneva, sans-serif;
+	font-size: 28pt;
+	line-height: 48px;
+	padding-top: 20px;
+	font-style:italic;
+	color:#FFE495;
+	font-weight: bold;
+	
+}
+
+h1 {
+	font-family:"Trebuchet MS", Arial, Helvetica, sans-serif;
+	font-size:56pt;
+	color:#FFF;
+}
+
+h2 {
+	font-family:"Trebuchet MS", Arial, Helvetica, sans-serif;
+	font-size:38pt;
+	color:#036;
+}
+
+#content {
+	margin: auto;
+	width: 980px;
+	background-color: #1a8bff;
+}
+
+.header {
+	width: 980px;
+}
+
+.footer {
+	clear: both;
+	width: 980px;
+	padding: 0px;
+}
+
+.back {
+	width: 255px;
+	float: right;
+	height: 120px;
+	padding-right: 30px;
+	padding-top: 30px;
+	border:0;
+}
+
+.index {
+	width: 980px;
+	border:0;
+	margin:0;
+	padding:0;
+	text-align: center;
+	background-image: url(../img/index.jpg);
+	background-repeat: no-repeat;
+}
+
+.index a{
+	border:0;
+	margin:0;
+	padding:0;	
+}
+
+.index img{
+	border:0;
+	margin:0;
+	padding:0;
+	
+}
+
+.chaptertitle {
+	clear: both;
+	width: 980px;
+	padding-top: 100px;
+}
+
+.itemtitle {
+	clear: both;
+	padding-top: 60px;
+	padding-left: 185px;
+}
+
+.item {
+	clear: both;
+	width: 930px;
+	padding: 20px;
+}
+
+.itemname {
+	width: 930px;
+	padding-left: 20px;
+}
+
+
+
+.itemimage {
+	padding: 10px;
+	float: left;
+}
+
+.itemtext { 
+	width: 700px;
+	padding: 10px;
+	float: left;
+	padding-left: 10px;
+	padding-right: 50px;
+	
+
+}
+
+.itemtip {
+	font-style:italic;
+	color:#FFE495;
+	font-weight: bold;
+}
+
